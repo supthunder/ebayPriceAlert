@@ -2,92 +2,64 @@
 # search page for avg price and give it to you
 from bs4 import BeautifulSoup
 import requests
-import re
 import tweepy
 import os
 import time
-from random import randint
 from time import gmtime, strftime
 from url import *
+from tokens import *
 
-def avgPrice(url):
+# setup twitter
+auth = tweepy.OAuthHandler(C_KEY, C_SECRET)  
+auth.set_access_token(A_TOKEN, A_TOKEN_SECRET)  
+api = tweepy.API(auth)
+username = ""
+
+def tweet(listingPrice,listinglink):
+    tweet = "Someone beat your price "
+    tweet += "@"+username+"!\n"
+    tweet += "New Price: $"+str(listingPrice)
+    tweet += "\nLink: "+listinglink+"\n"
+    tweet += strftime("%Y-%m-%d %H:%M:%S", gmtime())
+    print(tweet)
+    # api.update_status(tweet) 
+
+
+
+def avgPrice(url, price):
+    # connect to eBay
     headers = {'User-agent': 'Mozilla/5.0'}
     r  = requests.get(url)
     data = r.text
     soup = BeautifulSoup(data,"html.parser")
-    soldPrice = []
-    itemNames = []
-    # amntRegex = re.compile('\W[0-9]*')
-    # amntRegex = re.compile('\$.(\d+).(\d+)')
-    amntRegex = re.compile('((\d+).(\d+).(\d+)|(\d+).(\d+))')
 
-    count = 0
-    for details in soup.find_all("li",{"id": "item1c7a25e4c1", "r":"1"}):
-        price = details.find_all("li",{"class": "lvprice prc"})
-        link = details.find_all('a')
-        for lin in link:
-            print(lin['href'])
-
-
-
-
-    exit()
-
-
-    # Only check items from US + ignore "similar items" 
-    count = int((soup.find_all("span",{"class":"rcnt"}))[0].text.replace(",",""))
-
-    # all items on page
-    items = soup.find_all("ul",{"id": "ListViewInner"})
     
-    # Exit if too many results!
-    try:
-        itemPrice = items[0].find_all("span",{"class": "bold bidsold"})
-    except Exception as e:
-        print("\nSearch to broad! Too many items!")
-        exit()
-    try:
-        itemName = items[0].find_all("h3",{"class": "lvtitle"})
-    except:
-        print("\nSearch to broad! Too many items!")
-        exit()
+    listinglink = ""
+    listingPrice = ""
+    # pull the lowest price
+    for details in soup.find_all("li",{"id": "item1c7a25e4c1", "r":"1"}):
+        value = details.find_all("li",{"class": "lvprice prc"})
+        for eachPrice in value:
+            listingPrice = str(eachPrice.text).strip()
+            break;
 
+        href = details.find_all('a')
+        for links in href:
+            link = links['href']
+            break;
 
-    # for soldItems in range(0,count):
-    #     currentPrice = (re.search(amntRegex,str(itemPrice[soldItems].text).lstrip().rstrip().strip())).group()
-    #     soldPrice.append(float(currentPrice.replace(",","")))
-    #     itemNames.append(str(itemName[soldItems].text).encode('utf-8').strip())
-        
-    #     print(soldPrice)
-    #     exit()
-    #     # Note max of 198
-    #     if soldItems == 198:
-    #         break;
-
-    # soldPrice = list(map(float, soldPrice))
-
-
-    print("\nTotal items: ",count)
-    print("Highest: ",max(soldPrice))
-    print("Lowest: ",min(soldPrice))
-
-    # Write sold prices to a file
-    f = open('ebaySales.txt', 'w')
-    for sales in range(len(itemNames)):
-        f.write(str(itemNames[sales])+" : "+str(soldPrice[sales])+"\n")
-    f.close()
-
-    averagePrice = (sum(soldPrice) / float(len(soldPrice)))
-    print("The avg price is: $%.2f"%averagePrice)
-    print("The median price is $%.2f"%statistics.median(soldPrice))
-    print("The mean price is $%.2f"%statistics.mean(soldPrice))
+    listingPrice = float(listingPrice[1:])
+    if listingPrice == price:
+        tweet(listingPrice,listinglink)
+    else:
+        print("Your item has the lowest price!")
 
 
 def main():
-    # Get Input:
+    # Insert values here:
     print("This script will tweet when someone beats your lowest price\n")
-    price = "359.44"
+    price = 359.44
 
-    avgPrice(url)
+    avgPrice(url, price)
 
 main()
