@@ -8,4 +8,5 @@ Will tweet when a lower price is found
     username=""
 4. Insert your price into
     price = 0.00
+5. Create twitter account, and enter its tokens into token.py
 5. Run the bot with crontab, and it will tweet you when someone undercuts!
