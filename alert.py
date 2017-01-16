@@ -13,6 +13,8 @@ from tokens import *
 auth = tweepy.OAuthHandler(C_KEY, C_SECRET)  
 auth.set_access_token(A_TOKEN, A_TOKEN_SECRET)  
 api = tweepy.API(auth)
+
+# insert your username here
 username = ""
 
 def tweet(listingPrice,listinglink):
@@ -21,8 +23,8 @@ def tweet(listingPrice,listinglink):
     tweet += "New Price: $"+str(listingPrice)
     tweet += "\nLink: "+listinglink+"\n"
     tweet += strftime("%Y-%m-%d %H:%M:%S", gmtime())
-    print(tweet)
-    # api.update_status(tweet) 
+    # print(tweet)
+    api.update_status(tweet) 
 
 
 
@@ -45,11 +47,11 @@ def avgPrice(url, price):
 
         href = details.find_all('a')
         for links in href:
-            link = links['href']
+            listinglink = links['href']
             break;
 
     listingPrice = float(listingPrice[1:])
-    if listingPrice == price:
+    if listingPrice < price:
         tweet(listingPrice,listinglink)
     else:
         print("Your item has the lowest price!")
@@ -58,7 +60,9 @@ def avgPrice(url, price):
 def main():
     # Insert values here:
     print("This script will tweet when someone beats your lowest price\n")
-    price = 359.44
+    
+    # insert a float() price
+    price = 0.00
 
     avgPrice(url, price)
 
